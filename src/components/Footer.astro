@@ -1,0 +1,43 @@
+---
+import LanguageSwitcher from './LanguageSwitcher.vue';
+
+const currentLocale = Astro.currentLocale || 'en';
+const locales = ['en', 'pt-br', 'es', 'ja', 'nl', 'zh'];
+
+const footerLinks = [
+	{ name: 'Contact', path: '/contact' },
+	{ name: 'Privacy', path: '/privacy' },
+];
+
+const getLocalePath = (path: string) => {
+	if (currentLocale === 'en') return path;
+	return `/${currentLocale}${path === '/' ? '' : path}`;
+};
+---
+
+<footer class="border-t border-slate-100 py-12 mt-auto">
+	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+			<div>
+				<p class="text-sm text-slate-500 mb-4">Exploring life in the universe.</p>
+				<div class="flex gap-4">
+					{footerLinks.map((link) => (
+						<a 
+							href={getLocalePath(link.path)}
+							class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+						>
+							{link.name}
+						</a>
+					))}
+				</div>
+			</div>
+			
+			<div class="flex flex-col items-end gap-4">
+				<LanguageSwitcher client:load currentLocale={currentLocale} locales={locales} variant="footer" />
+				<p class="text-[10px] font-black uppercase tracking-widest text-slate-300">
+					&copy; {new Date().getFullYear()} Astrobiology
+				</p>
+			</div>
+		</div>
+	</div>
+</footer>

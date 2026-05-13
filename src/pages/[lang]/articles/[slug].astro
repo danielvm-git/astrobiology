@@ -1,0 +1,15 @@
+---
+import Article from '../../../components/pages/Article.astro';
+
+export function getStaticPaths() {
+	return [
+		{ params: { lang: 'pt-br' } },
+		{ params: { lang: 'es' } },
+		{ params: { lang: 'ja' } },
+		{ params: { lang: 'nl' } },
+		{ params: { lang: 'zh' } },
+	];
+}
+---
+
+<Article />

@@ -1,0 +1,86 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getArticleBySlug, getImageUrl } from '../../lib/appwrite';
+import { formatDate, readingTime } from '../../lib/utils';
+import { Clock, Calendar, User } from 'lucide-vue-next';
+
+const { slug } = Astro.params;
+const currentLocale = Astro.currentLocale || 'en';
+
+if (!slug) return Astro.redirect('/404');
+
+const article = await getArticleBySlug(slug, currentLocale);
+
+if (!article) return Astro.redirect('/404');
+
+const title = article.translation.title;
+const content = article.translation.content;
+const excerpt = article.translation.excerpt;
+const imageUrl = article.featuredImage ? getImageUrl(article.featuredImage, 1200, 600) : null;
+---
+
+<Layout title={`${title} - Astrobiology`}>
+	<article class="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8 flex-1">
+		<header class="mb-12">
+			<h1 class="text-4xl md:text-6xl font-black text-slate-900 mb-8 leading-[1.1] tracking-tight font-serif text-balance">
+				{title}
+			</h1>
+			
+			<div class="flex flex-wrap items-center gap-6 text-xs font-black uppercase tracking-widest text-slate-400">
+				<div class="flex items-center gap-2">
+					<User className="h-4 w-4" />
+					{article.authorName || 'Staff'}
+				</div>
+				<div class="flex items-center gap-2">
+					<Calendar className="h-4 w-4" />
+					{formatDate(article.publishedAt || article.$createdAt, currentLocale)}
+				</div>
+				<div class="flex items-center gap-2">
+					<Clock className="h-4 w-4" />
+					{readingTime(content)} min read
+				</div>
+			</div>
+		</header>
+
+		{imageUrl && (
+			<div class="mb-12 rounded-3xl overflow-hidden shadow-2xl">
+				<img src={imageUrl} alt={article.featuredImageAlt || title} class="w-full h-auto" />
+				{article.featuredImageAlt && (
+					<p class="mt-4 text-center text-sm text-slate-400 italic font-serif">
+						{article.featuredImageAlt}
+					</p>
+				)}
+			</div>
+		)}
+
+		<div class="prose prose-slate lg:prose-xl max-w-none font-serif leading-relaxed text-slate-700" set:html={content} />
+		
+		<footer class="mt-20 pt-12 border-t border-slate-100">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-4">
+					<div class="bg-slate-100 p-4 rounded-full text-2xl">🔭</div>
+					<div>
+						<p class="text-sm font-bold text-slate-900">Astrobiology Team</p>
+						<p class="text-xs text-slate-500 italic">Exploring life beyond Earth.</p>
+					</div>
+				</div>
+				<div class="flex gap-4">
+					<!-- Share buttons could go here -->
+				</div>
+			</div>
+		</footer>
+	</article>
+</Layout>
+
+<style is:global>
+	/* Custom typography overrides for the article content */
+	.prose h2 {
+		@apply font-black tracking-tight text-slate-900 mt-16 mb-6;
+	}
+	.prose p {
+		@apply mb-8;
+	}
+	.prose blockquote {
+		@apply border-l-4 border-primary pl-8 italic text-2xl text-slate-600 my-12;
+	}
+</style>

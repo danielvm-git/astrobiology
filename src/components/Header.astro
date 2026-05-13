@@ -1,0 +1,49 @@
+---
+import { Telescope, Menu } from 'lucide-vue-next';
+import LanguageSwitcher from './LanguageSwitcher.vue';
+
+const currentLocale = Astro.currentLocale || 'en';
+const locales = ['en', 'pt-br', 'es', 'ja', 'nl', 'zh'];
+
+const navItems = [
+	{ name: 'Home', path: '/' },
+	{ name: 'Articles', path: '/articles' },
+	{ name: 'About', path: '/about' },
+];
+
+const getLocalePath = (path: string) => {
+	if (currentLocale === 'en') return path;
+	return `/${currentLocale}${path === '/' ? '' : path}`;
+};
+---
+
+<header class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur">
+	<div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+		<a href={getLocalePath('/')} class="flex items-center gap-2">
+			<Telescope className="h-6 w-6 text-primary" />
+			<span class="text-sm font-black uppercase tracking-widest">Astrobiology</span>
+		</a>
+		
+		<nav class="hidden items-center gap-6 md:flex">
+			{navItems.map((item) => (
+				<a 
+					href={getLocalePath(item.path)}
+					class="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors"
+				>
+					{item.name}
+				</a>
+			))}
+			<a 
+				href="/admin" 
+				class="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors"
+			>
+				Admin
+			</a>
+			<LanguageSwitcher client:load currentLocale={currentLocale} locales={locales} variant="header" />
+		</nav>
+
+		<button class="md:hidden p-2 text-slate-500">
+			<Menu className="h-6 w-6" />
+		</button>
+	</div>
+</header>
