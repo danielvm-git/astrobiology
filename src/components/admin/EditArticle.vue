@@ -17,9 +17,9 @@ const data = ref<{
 
 onMounted(async () => {
   try {
-    const article = await databases.getDocument(DATABASE_ID, ARTICLES_COLLECTION_ID, props.articleId);
-    const transList = await databases.listDocuments(DATABASE_ID, TRANSLATIONS_COLLECTION_ID, [
-      Query.equal('articleId', props.articleId)
+    const article = await databases.getDocument(DATABASE_ID!, ARTICLES_COLLECTION_ID!, props.articleId);
+    const transList = await databases.listDocuments(DATABASE_ID!, TRANSLATIONS_COLLECTION_ID!, [
+      Query.equal('article_id', props.articleId)
     ]);
     
     data.value = {
@@ -27,6 +27,7 @@ onMounted(async () => {
       translations: transList.documents,
     };
   } catch (err) {
+    console.error("Error fetching article:", err);
     error.value = true;
   } finally {
     isLoading.value = false;
@@ -39,18 +40,18 @@ async function handleSave(
 ) {
   saving.value = true;
   try {
-    await databases.updateDocument(DATABASE_ID, ARTICLES_COLLECTION_ID, props.articleId, articleData);
+    await databases.updateDocument(DATABASE_ID!, ARTICLES_COLLECTION_ID!, props.articleId, articleData);
     
     // Process translations
     for (const t of translations) {
       if (t.$id) {
         // Exclude internal fields
         const { $id, $collectionId, $databaseId, $createdAt, $updatedAt, $permissions, ...updateData } = t as any;
-        await databases.updateDocument(DATABASE_ID, TRANSLATIONS_COLLECTION_ID, $id, updateData);
+        await databases.updateDocument(DATABASE_ID!, TRANSLATIONS_COLLECTION_ID!, $id, updateData);
       } else {
-        await databases.createDocument(DATABASE_ID, TRANSLATIONS_COLLECTION_ID, 'unique()', {
+        await databases.createDocument(DATABASE_ID!, TRANSLATIONS_COLLECTION_ID!, 'unique()', {
           ...t,
-          articleId: props.articleId
+          article_id: props.articleId
         });
       }
     }

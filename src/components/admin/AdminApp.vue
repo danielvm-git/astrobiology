@@ -82,13 +82,12 @@ function onLoginSuccess() {
 </script>
 
 <template>
-  <div v-if="isReady">
-    <component :is="currentComponent" v-bind="currentProps" @login-success="onLoginSuccess" />
+  <div v-if="isReady" class="font-sans">
+    <Login v-if="currentComponent === Login" @login-success="onLoginSuccess" />
+    <component v-else :is="currentComponent" v-bind="currentProps" />
   </div>
-  <div v-else class="min-h-screen bg-slate-900 flex items-center justify-center">
-    <div class="relative w-16 h-16">
-      <div class="absolute inset-0 border-4 border-primary/10 rounded-full"></div>
-      <div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-    </div>
+  <div v-else class="min-h-screen bg-base-300 flex flex-col items-center justify-center gap-4">
+    <span class="loading loading-ring loading-lg text-primary"></span>
+    <p class="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 animate-pulse">Initializing System</p>
   </div>
 </template>

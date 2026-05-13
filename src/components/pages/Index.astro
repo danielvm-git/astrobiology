@@ -1,38 +1,117 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import ArticleCard from '../ArticleCard.astro';
-import { getArticles } from '../../lib/appwrite';
+import { getArticles, getImageUrl, CATEGORIES, type Article } from '../../lib/appwrite';
+import { formatDate } from '../../lib/utils';
 
 const currentLocale = Astro.currentLocale || 'en';
-const articles = await getArticles(currentLocale, 6);
+const articles: Article[] = await getArticles(currentLocale, 9);
 ---
 
 <Layout title="Astrobiology - Exploring life in the universe">
-	<main class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 flex-1">
-		<div class="mb-12 border-b border-slate-100 pb-12">
-			<h1 class="text-5xl md:text-7xl font-black text-slate-900 mb-6 tracking-tighter">Astrobiology</h1>
-			<p class="text-xl md:text-2xl text-slate-500 font-serif max-w-3xl leading-relaxed italic">
-				Exploring the origins, evolution, and future of life in the universe. Professional science journalism with a cosmic perspective.
-			</p>
-		</div>
-		
-		<section>
-			<div class="flex items-center justify-between mb-8">
-				<h2 class="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Latest Articles</h2>
-				<a href="/articles" class="text-xs font-black uppercase tracking-widest text-primary hover:underline">View All</a>
+	<main class="min-h-screen">
+		<!-- Astro News Style Top Section -->
+		<section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+			{articles.length > 0 ? (
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+					<!-- Featured Article (Left, 2/3) -->
+					<div class="lg:col-span-2 group cursor-pointer">
+						<a href={`/${currentLocale}/articles/${articles[0].translation?.slug || articles[0].slug}`} class="block">
+							<div class="rounded-2xl overflow-hidden aspect-[16/9] mb-6 shadow-sm">
+								{articles[0].featuredImage ? (
+									<img 
+										src={getImageUrl(articles[0].featuredImage, 1200, 800)} 
+										alt={articles[0].translation?.title || articles[0].title}
+										class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+								) : (
+									<div class="w-full h-full bg-neutral-50 flex items-center justify-center text-6xl">🔭</div>
+								)}
+							</div>
+							<h2 class="text-3xl md:text-4xl font-black text-foreground mb-4 leading-tight group-hover:text-primary transition-colors">
+								{articles[0].translation?.title || articles[0].title}
+							</h2>
+							<p class="text-lg text-foreground/70 font-serif mb-6 line-clamp-2 italic">
+								{articles[0].translation?.excerpt || articles[0].excerpt}
+							</p>
+							<div class="flex items-center gap-4 text-xs font-bold uppercase tracking-widest">
+								<span class="text-primary">
+									{CATEGORIES.find(c => c.slug === articles[0].category)?.name || articles[0].category}
+								</span>
+								<span class="text-foreground/40">•</span>
+								<span class="text-foreground/60">
+									{formatDate(articles[0].publishedAt || articles[0].$createdAt, currentLocale)}
+								</span>
+							</div>
+						</a>
+					</div>
+
+					<!-- Side Articles (Right, 1/3) -->
+					<div class="lg:col-span-1 flex flex-col gap-8">
+						{articles.slice(1, 5).map(article => (
+							<a href={`/${currentLocale}/articles/${article.translation?.slug || article.slug}`} class="group flex gap-4 items-start">
+								<div class="flex-1 min-w-0">
+									<h3 class="text-base font-bold text-foreground leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
+										{article.translation?.title || article.title}
+									</h3>
+									<p class="text-sm text-foreground/70 font-serif mb-3 line-clamp-2 italic">
+										{article.translation?.excerpt || article.excerpt}
+									</p>
+									<div class="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider">
+										<span class="text-primary">
+											{CATEGORIES.find(c => c.slug === article.category)?.name || article.category}
+										</span>
+										<span class="text-foreground/60">
+											{formatDate(article.publishedAt || article.$createdAt, currentLocale)}
+										</span>
+									</div>
+								</div>
+								<div class="shrink-0 w-28 h-20 sm:w-32 sm:h-24 rounded-xl overflow-hidden shadow-sm">
+									{article.featuredImage ? (
+										<img 
+											src={getImageUrl(article.featuredImage, 400, 300)} 
+											alt={article.translation?.title || article.title}
+											class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+										/>
+									) : (
+										<div class="w-full h-full bg-neutral-50 flex items-center justify-center text-xl">🔭</div>
+									)}
+								</div>
+							</a>
+						))}
+					</div>
+				</div>
+			) : (
+				<div class="py-20 text-center border-2 border-dashed border-neutral-500/20 rounded-3xl bg-background mt-12 mb-16">
+					<p class="text-foreground/40 font-serif italic text-lg">No articles found. Stay tuned for cosmic updates.</p>
+				</div>
+			)}
+
+			<div class="flex items-center justify-between mb-8 border-b border-neutral-500/20 pb-4 mt-8">
+				<h2 class="text-xl font-black text-foreground">Latest News</h2>
+				<a href="/articles" class="text-sm font-bold text-foreground/60 hover:text-primary transition-colors flex items-center gap-1">
+					View all
+					<span aria-hidden="true">&rarr;</span>
+				</a>
 			</div>
 			
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-				{articles.map((article) => (
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+				{articles.slice(5).map((article) => (
 					<ArticleCard article={article} />
 				))}
 			</div>
+		</section>
 
-			{articles.length === 0 && (
-				<div class="py-20 text-center border-2 border-dashed border-slate-100 rounded-3xl">
-					<p class="text-slate-400 font-serif italic text-lg">No articles found. Stay tuned for cosmic updates.</p>
+		<!-- Newsletter / Call to Action -->
+		<section class="bg-primary text-primary-content py-16">
+			<div class="max-w-4xl mx-auto px-4 text-center">
+				<h2 class="text-3xl md:text-4xl font-black mb-4 tracking-tight">Join the Cosmic Voyage</h2>
+				<p class="text-lg opacity-80 mb-8 font-serif italic">Get the latest astrobiology news and research delivered to your inbox.</p>
+				<div class="join w-full max-w-md mx-auto flex justify-center">
+					<input class="input input-bordered join-item w-full text-foreground" placeholder="Email Address" />
+					<button class="btn btn-neutral join-item">Subscribe</button>
 				</div>
-			)}
+			</div>
 		</section>
 	</main>
 </Layout>

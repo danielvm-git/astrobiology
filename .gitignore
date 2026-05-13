@@ -27,3 +27,8 @@ pnpm-lock.yaml
 ehthumbs.db
 Thumbs.db
 .worktrees/
+
+# Internal tools and docs
+.superpowers/
+agents_md.tar.gz
+docs/superpowers/

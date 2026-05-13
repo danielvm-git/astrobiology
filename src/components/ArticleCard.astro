@@ -26,70 +26,52 @@ const getLocalePath = (path: string) => {
 ---
 
 {article && (
-	<article class={cn(
-		"group overflow-hidden bg-white border border-slate-100 transition-all duration-500 hover:shadow-xl hover:border-primary/20 flex flex-col h-full",
-		variant === 'featured' && "md:flex-row md:aspect-[21/9]",
-		className
-	)}>
-		<a href={getLocalePath(`/articles/${slug}`)} class={cn(
-			"block overflow-hidden shrink-0",
-			variant === 'featured' ? "md:w-1/2 h-full" : "aspect-[16/10]"
-		)}>
-			<div class="relative h-full w-full bg-slate-50">
+	<div class={cn("card bg-background shadow-xl hover:shadow-2xl transition-all duration-300 border border-neutral-500/20 group", className)}>
+		<figure class="relative h-48 overflow-hidden">
+			<a href={getLocalePath(`/articles/${slug}`)} class="w-full h-full">
 				{imageUrl ? (
 					<img 
 						src={imageUrl} 
 						alt={article.featuredImageAlt || title} 
-						class="h-full w-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+						class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
 						loading="lazy"
 					/>
 				) : (
-					<div class="flex h-full w-full items-center justify-center grayscale opacity-30 text-4xl">🔭</div>
+					<div class="flex h-full w-full items-center justify-center bg-neutral-50 text-4xl">🔭</div>
 				)}
-				{article.featured && (
-					<div class="absolute top-4 left-4">
-						<span class="bg-primary text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 shadow-lg">
-							Featured
-						</span>
-					</div>
-				)}
-			</div>
-		</a>
-		
-		<div class="p-6 flex flex-col flex-1">
+			</a>
 			{category && (
-				<div class="mb-4">
+				<div class="absolute top-4 left-4">
 					<a 
 						href={getLocalePath(`/categories/${category.slug}`)}
-						class="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:underline"
+						class="badge badge-primary font-bold uppercase text-[10px] tracking-wider"
 					>
 						{category.name}
 					</a>
 				</div>
 			)}
+		</figure>
+		
+		<div class="card-body p-6">
+			<div class="flex items-center gap-2 text-xs opacity-70 mb-2 uppercase font-bold tracking-widest">
+				<time>{formatDate(article.publishedAt || article.$createdAt, currentLocale)}</time>
+			</div>
 			
-			<a href={getLocalePath(`/articles/${slug}`)} class="group-hover:text-primary transition-colors duration-300">
-				<h3 class={cn(
-					"font-bold leading-[1.15] text-slate-900 mb-4 font-serif group-hover:underline decoration-primary/30 decoration-2 underline-offset-4 transition-all text-balance",
-					variant === 'featured' ? "text-2xl md:text-4xl" : "text-xl md:text-2xl"
-				)}>
-					{title}
-				</h3>
-			</a>
+			<h2 class="card-title text-xl font-bold leading-tight group-hover:text-primary transition-colors duration-300">
+				<a href={getLocalePath(`/articles/${slug}`)}>{title}</a>
+			</h2>
 			
-			<p class="text-slate-600 text-base leading-relaxed font-serif line-clamp-3 mb-8 italic">
+			<p class="text-sm opacity-80 line-clamp-3 my-4 italic">
 				{excerpt}
 			</p>
 
-			<div class="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-				<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-					{formatDate(article.publishedAt || article.$createdAt, currentLocale)}
-				</div>
-				<div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-					<Clock className="h-3 w-3" />
+			<div class="card-actions justify-between items-center mt-4 pt-4 border-t border-neutral-500/20">
+				<div class="flex items-center gap-1.5 text-[10px] font-bold opacity-50 uppercase tracking-widest">
+					<Clock class="h-3 w-3" />
 					5 min
 				</div>
+				<a href={getLocalePath(`/articles/${slug}`)} class="btn btn-primary btn-sm btn-outline">Read More</a>
 			</div>
 		</div>
-	</article>
+	</div>
 )}

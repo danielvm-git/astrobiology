@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed, watch } from "vue";
 import { CheckCircle2, Copy, FileText, Globe, Sparkles, Trash2 } from "lucide-vue-next";
 import { cn } from "../../lib/utils";
 import { ARTICLE_CATEGORIES } from "../../lib/article-categories";
@@ -171,11 +172,14 @@ async function translateLine(
   isHtml: boolean
 ): Promise<string | null> {
   try {
-    const res = await $fetch<{ translated: string }>("/api/translate", {
+    const res = await fetch("/api/translate", {
       method: "POST",
-      body: { text, targetLang, isHtml },
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, targetLang, isHtml }),
     });
-    return res.translated || null;
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.translated || null;
   } catch {
     return null;
   }

@@ -4,14 +4,21 @@ import { getArticleBySlug, getImageUrl } from '../../lib/appwrite';
 import { formatDate, readingTime } from '../../lib/utils';
 import { Clock, Calendar, User } from 'lucide-vue-next';
 
+const { article: propArticle } = Astro.props;
 const { slug } = Astro.params;
 const currentLocale = Astro.currentLocale || 'en';
 
-if (!slug) return Astro.redirect('/404');
+let article = propArticle;
 
-const article = await getArticleBySlug(slug, currentLocale);
+if (!article && slug) {
+	article = await getArticleBySlug(slug, currentLocale);
+}
 
-if (!article) return Astro.redirect('/404');
+if (!article) {
+	// Fallback to 404 handled at page level, but if somehow reached here,
+	// we just render a simple message or let Layout handle it.
+	return Astro.redirect('/404');
+}
 
 const title = article.translation.title;
 const content = article.translation.content;
@@ -20,68 +27,86 @@ const imageUrl = article.featuredImage ? getImageUrl(article.featuredImage, 1200
 ---
 
 <Layout title={`${title} - Astrobiology`}>
-	<article class="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8 flex-1">
-		<header class="mb-12">
-			<h1 class="text-4xl md:text-6xl font-black text-slate-900 mb-8 leading-[1.1] tracking-tight font-serif text-balance">
-				{title}
-			</h1>
-			
-			<div class="flex flex-wrap items-center gap-6 text-xs font-black uppercase tracking-widest text-slate-400">
-				<div class="flex items-center gap-2">
-					<User className="h-4 w-4" />
-					{article.authorName || 'Staff'}
+	<main class="bg-base-100 min-h-screen">
+		<article class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+			<header class="mb-12 text-center md:text-left">
+				<div class="flex justify-center md:justify-start mb-6">
+					<span class="badge badge-primary badge-outline font-bold uppercase tracking-widest px-4 py-3">Science Report</span>
 				</div>
-				<div class="flex items-center gap-2">
-					<Calendar className="h-4 w-4" />
-					{formatDate(article.publishedAt || article.$createdAt, currentLocale)}
-				</div>
-				<div class="flex items-center gap-2">
-					<Clock className="h-4 w-4" />
-					{readingTime(content)} min read
-				</div>
-			</div>
-		</header>
-
-		{imageUrl && (
-			<div class="mb-12 rounded-3xl overflow-hidden shadow-2xl">
-				<img src={imageUrl} alt={article.featuredImageAlt || title} class="w-full h-auto" />
-				{article.featuredImageAlt && (
-					<p class="mt-4 text-center text-sm text-slate-400 italic font-serif">
-						{article.featuredImageAlt}
-					</p>
-				)}
-			</div>
-		)}
-
-		<div class="prose prose-slate lg:prose-xl max-w-none font-serif leading-relaxed text-slate-700" set:html={content} />
-		
-		<footer class="mt-20 pt-12 border-t border-slate-100">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-4">
-					<div class="bg-slate-100 p-4 rounded-full text-2xl">🔭</div>
-					<div>
-						<p class="text-sm font-bold text-slate-900">Astrobiology Team</p>
-						<p class="text-xs text-slate-500 italic">Exploring life beyond Earth.</p>
+				<h1 class="text-4xl md:text-6xl font-black text-base-content mb-8 leading-tight tracking-tighter font-serif text-balance">
+					{title}
+				</h1>
+				
+				<div class="flex flex-wrap items-center justify-center md:justify-start gap-6 text-xs font-bold uppercase tracking-widest opacity-60">
+					<div class="flex items-center gap-2">
+						<User class="h-4 w-4 text-primary" />
+						{article.authorName || 'Staff'}
+					</div>
+					<div class="flex items-center gap-2">
+						<Calendar class="h-4 w-4 text-primary" />
+						{formatDate(article.publishedAt || article.$createdAt, currentLocale)}
+					</div>
+					<div class="flex items-center gap-2">
+						<Clock class="h-4 w-4 text-primary" />
+						{readingTime(content)} min read
 					</div>
 				</div>
-				<div class="flex gap-4">
-					<!-- Share buttons could go here -->
+			</header>
+
+			{imageUrl && (
+				<div class="mb-12 rounded-3xl overflow-hidden shadow-2xl border border-base-200">
+					<img src={imageUrl} alt={article.featuredImageAlt || title} class="w-full h-auto transition-transform duration-700 hover:scale-105" />
+					{article.featuredImageAlt && (
+						<div class="bg-base-200 p-4 text-center text-sm opacity-70 italic font-serif">
+							{article.featuredImageAlt}
+						</div>
+					)}
+				</div>
+			)}
+
+			<div class="prose prose-lg md:prose-xl max-w-none font-serif leading-relaxed text-base-content/90 prose-headings:text-base-content prose-headings:font-black prose-headings:tracking-tighter prose-a:text-primary prose-blockquote:border-primary prose-blockquote:bg-base-200 prose-blockquote:py-2 prose-blockquote:rounded-r-xl" set:html={content} />
+			
+			<footer class="mt-20 pt-12 border-t border-base-200">
+				<div class="card bg-base-200 shadow-sm border border-base-300">
+					<div class="card-body flex-row items-center gap-6">
+						<div class="avatar placeholder">
+							<div class="bg-primary text-primary-content rounded-full w-16">
+								<span class="text-3xl">🔭</span>
+							</div>
+						</div>
+						<div>
+							<h3 class="card-title text-base-content">Astrobiology Team</h3>
+							<p class="text-sm opacity-70 italic">Exploring life beyond Earth. Professional science journalism with a cosmic perspective.</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</article>
+
+		<!-- Newsletter / Call to Action -->
+		<section class="bg-primary text-primary-content py-16 mt-20">
+			<div class="max-w-4xl mx-auto px-4 text-center">
+				<h2 class="text-3xl md:text-4xl font-black mb-4 uppercase tracking-tighter">Follow the Discovery</h2>
+				<p class="text-lg opacity-80 mb-8 font-serif italic">Stay updated with the latest research on the search for life in the universe.</p>
+				<div class="join w-full max-w-md">
+					<input class="input input-bordered join-item w-full text-base-content" placeholder="Email Address" />
+					<button class="btn btn-neutral join-item">Subscribe</button>
 				</div>
 			</div>
-		</footer>
-	</article>
+		</section>
+	</main>
 </Layout>
 
 <style is:global>
 	@reference "../../styles/global.css";
 	/* Custom typography overrides for the article content */
 	.prose h2 {
-		@apply font-black tracking-tight text-slate-900 mt-16 mb-6;
+		@apply font-black tracking-tight text-base-content mt-16 mb-6;
 	}
 	.prose p {
 		@apply mb-8;
 	}
 	.prose blockquote {
-		@apply border-l-4 border-primary pl-8 italic text-2xl text-slate-600 my-12;
+		@apply border-l-4 border-primary pl-8 italic text-2xl text-base-content/70 my-12;
 	}
 </style>

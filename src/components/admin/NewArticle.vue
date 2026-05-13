@@ -11,13 +11,13 @@ async function handleSave(
 ) {
   saving.value = true;
   try {
-    const article = await databases.createDocument(DATABASE_ID, ARTICLES_COLLECTION_ID, 'unique()', articleData);
+    const article = await databases.createDocument(DATABASE_ID!, ARTICLES_COLLECTION_ID!, 'unique()', articleData);
     
     // Process translations
     for (const t of translations) {
-      await databases.createDocument(DATABASE_ID, TRANSLATIONS_COLLECTION_ID, 'unique()', {
+      await databases.createDocument(DATABASE_ID!, TRANSLATIONS_COLLECTION_ID!, 'unique()', {
         ...t,
-        articleId: article.$id
+        article_id: article.$id
       });
     }
     

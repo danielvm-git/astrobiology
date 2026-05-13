@@ -1,5 +1,13 @@
 ---
 import Article from '../../components/pages/Article.astro';
----
+import { getArticleBySlug } from '../../lib/appwrite';
 
-<Article />
+const { slug } = Astro.params;
+const currentLocale = Astro.currentLocale || 'en';
+
+if (!slug) return Astro.redirect('/404');
+
+const article = await getArticleBySlug(slug, currentLocale);
+if (!article) return Astro.redirect('/404');
+---
+<Article article={article} />

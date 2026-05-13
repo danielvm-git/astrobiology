@@ -1,4 +1,4 @@
-import { Client, Databases, Storage, Account, Query } from 'node-appwrite';
+import { Client, Databases, Storage, Account, Query, type Models } from 'node-appwrite';
 
 const client = new Client();
 
@@ -14,6 +14,38 @@ if (projectId) {
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const account = new Account(client);
+
+export interface Translation extends Models.Document {
+  article_id: string;
+  language: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export interface Article extends Models.Document {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  authorId: string;
+  authorName: string;
+  featuredImage?: string;
+  featuredImageAlt?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  tags?: string[];
+  publishedAt?: string;
+  status: 'draft' | 'published';
+  featured: boolean;
+  language?: string;
+  translationId?: string;
+  translation?: Translation | null;
+}
 
 export const CATEGORIES = [
   { id: "news", name: "News", slug: "news", color: "primary" },
@@ -43,10 +75,10 @@ export function createAdminClient() {
   };
 }
 
-export async function getArticles(locale: string, limit = 10) {
+export async function getArticles(locale: string, limit = 10): Promise<Article[]> {
   const { databases } = createAdminClient();
   
-  const response = await databases.listDocuments(
+  const response = await databases.listDocuments<Article>(
     DATABASE_ID!,
     ARTICLES_COLLECTION_ID!,
     [
@@ -57,7 +89,7 @@ export async function getArticles(locale: string, limit = 10) {
   );
 
   const articles = await Promise.all(response.documents.map(async (article) => {
-    const translations = await databases.listDocuments(
+    const translations = await databases.listDocuments<Translation>(
       DATABASE_ID!,
       TRANSLATIONS_COLLECTION_ID!,
       [
@@ -75,10 +107,10 @@ export async function getArticles(locale: string, limit = 10) {
   return articles;
 }
 
-export async function getArticleBySlug(slug: string, locale: string) {
+export async function getArticleBySlug(slug: string, locale: string): Promise<Article | null> {
   const { databases } = createAdminClient();
   
-  const translations = await databases.listDocuments(
+  const translations = await databases.listDocuments<Translation>(
     DATABASE_ID!,
     TRANSLATIONS_COLLECTION_ID!,
     [
@@ -90,7 +122,7 @@ export async function getArticleBySlug(slug: string, locale: string) {
   if (translations.documents.length === 0) return null;
   
   const translation = translations.documents[0];
-  const article = await databases.getDocument(
+  const article = await databases.getDocument<Article>(
     DATABASE_ID!,
     ARTICLES_COLLECTION_ID!,
     translation.article_id
